@@ -35,7 +35,7 @@ RUN set -x; \
 
 # Copy entrypoint script and Odoo configuration file
 RUN pip3 install num2words
-ADD https://raw.githubusercontent.com/cutech/docker-odoo-11/master/odoo.conf /etc/odoo/
+COPY odoo.conf /etc/odoo/
 RUN chown odoo /etc/odoo/odoo.conf
 
 # Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
