@@ -1,5 +1,5 @@
 FROM debian:stretch
-MAINTAINER C.U.tech <cody@c-u-tech.com>
+MAINTAINER Odoo S.A. <info@odoo.com>
 
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
@@ -28,6 +28,7 @@ ENV ODOO_VERSION 11.0
 ENV ODOO_RELEASE latest
 RUN set -x; \
         curl -o odoo.deb -SL http://nightly.odoo.com/${ODOO_VERSION}/nightly/deb/odoo_${ODOO_VERSION}.${ODOO_RELEASE}_all.deb \
+#        && echo '63d3fd997c850b657b93fb9351624d88d45d1682 odoo.deb' | sha1sum -c - \
         && dpkg --force-depends -i odoo.deb \
         && apt-get update \
         && apt-get -y install -f --no-install-recommends \
@@ -35,13 +36,14 @@ RUN set -x; \
 
 # Copy entrypoint script and Odoo configuration file
 RUN pip3 install num2words
-ADD ./odoo.conf /etc/odoo/
+COPY ./entrypoint.sh /
+COPY ./odoo.conf /etc/odoo/
 RUN chown odoo /etc/odoo/odoo.conf
 
 # Mount /var/lib/odoo to allow restoring filestore and /mnt/extra-addons for users addons
 RUN mkdir -p /mnt/extra-addons \
         && chown -R odoo /mnt/extra-addons
-# VOLUME ["/var/lib/odoo", "/mnt/extra-addons", "/etc/odoo/"]
+VOLUME ["/var/lib/odoo", "/mnt/extra-addons", "/etc/odoo/"]
 
 # Expose Odoo services
 EXPOSE 8069 8071 8072
@@ -52,5 +54,5 @@ ENV ODOO_RC /etc/odoo/odoo.conf
 # Set default user when running the container
 USER odoo
 
-#ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["odoo"]
